@@ -1,4 +1,4 @@
-package org.quarkusmongodb.models.repositories;
+package org.quarkusmongodb.repositories;
 
 import org.quarkusmongodb.models.Book;
 

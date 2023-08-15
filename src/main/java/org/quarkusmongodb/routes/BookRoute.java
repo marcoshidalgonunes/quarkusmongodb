@@ -3,7 +3,7 @@ package org.quarkusmongodb.routes;
 import java.util.List;
 
 import org.quarkusmongodb.models.Book;
-import org.quarkusmongodb.models.repositories.BookRepository;
+import org.quarkusmongodb.repositories.BookRepository;
 
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RouteBase;
