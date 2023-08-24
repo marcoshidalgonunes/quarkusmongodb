@@ -23,9 +23,10 @@ public class BookRoute {
         return bookRepository.listAll();
     }
 
-    @Route(path = "/Books/:id", methods = Route.HttpMethod.GET) 
+    @Route(path = "/Books/:criteria/:search", methods = Route.HttpMethod.GET) 
     List<Book> getByCriteria(@Param String criteria, @Param String search) {
-        return bookRepository.find(criteria, search).list();
+        String query = String.format("{ '%s': /%s/ }", criteria, search);
+        return bookRepository.find(query).list();
     }
 
     @Route(path = "/Books/:id", methods = Route.HttpMethod.GET) 
