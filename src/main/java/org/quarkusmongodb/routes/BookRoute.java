@@ -25,7 +25,7 @@ public class BookRoute {
 
     @Route(path = "/Books/:criteria/:search", methods = Route.HttpMethod.GET) 
     List<Book> getByCriteria(@Param String criteria, @Param String search) {
-        String query = String.format("{ '%s': /%s/ }", criteria, search);
+        String query = "{ '%s': /%s/ }".formatted( criteria, search );
         return bookRepository.find(query).list();
     }
 
