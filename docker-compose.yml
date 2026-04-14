@@ -1,0 +1,43 @@
+services:
+
+  api:
+    container_name: quarkus-api
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    ports:
+      - "8080:8080"
+    environment:
+      - QUARKUS_PROFILE=docker
+      - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - lan-network
+
+  mongo:
+    container_name: bookstoredb
+    image: mongo
+    restart: always
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - lan-network        
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  mongodata:
+    external: true
+    name: mongodata
+
+networks:
+  lan-network:
+    driver: bridge

@@ -1,0 +1,4 @@
+quarkus:
+  mongodb:
+    connection-string: mongodb://mongo:27017
+    database: BookstoreDb
