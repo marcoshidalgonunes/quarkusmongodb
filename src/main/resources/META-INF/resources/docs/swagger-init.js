@@ -1,7 +1,12 @@
-window.onload = () => {
+(function bootstrapDocsSwagger() {
   const oauthClientId = "quarkus-app";
   const oauthScopes = ["openid"];
+
+  let isInternalClose = false;
+  let baselineAccessTokens = new Set();
+
   const toPlain = (value) => (value && typeof value.toJS === "function" ? value.toJS() : value);
+  const getSystem = () => window.ui?.getSystem?.();
 
   const extractAccessTokenFromAuthorized = (authorizedValue) => {
     const authObj = toPlain(authorizedValue);
@@ -22,44 +27,6 @@ window.onload = () => {
     return null;
   };
 
-  window.ui = SwaggerUIBundle({
-    url: "/q/openapi",
-    dom_id: "#swagger-ui",
-    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-    layout: "StandaloneLayout",
-    oauth2RedirectUrl: `${window.location.origin}/docs/oauth2-redirect.html`,
-    persistAuthorization: true,
-    requestInterceptor: (request) => {
-      const authorized = window.ui?.getSystem?.()?.authSelectors?.authorized?.();
-      const accessToken = extractAccessTokenFromAuthorized(authorized);
-
-      if (accessToken) {
-        request.headers = request.headers || {};
-        request.headers.Authorization = `Bearer ${accessToken}`;
-      }
-
-      console.info("[docs][diag] request", {
-        method: request.method,
-        url: request.url,
-        hasAccessToken: !!accessToken,
-        hasAuthorizationHeader: !!(request.headers && request.headers.Authorization)
-      });
-
-      return request;
-    }
-  });
-
-  window.ui.initOAuth({
-    clientId: oauthClientId,
-    usePkceWithAuthorizationCodeGrant: true,
-    scopes: oauthScopes.join(" ")
-  });
-
-  const system = window.ui.getSystem();
-  const originalShowDefinitions = system?.authActions?.showDefinitions;
-  let isInternalClose = false;
-  let baselineAccessTokens = new Set();
-
   const prepareModalInputs = () => {
     const authContainer = document.querySelector(".auth-container");
     if (!authContainer) {
@@ -75,14 +42,10 @@ window.onload = () => {
       clientIdInput.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
-    const scopeCheckboxes = Array.from(
-      authContainer.querySelectorAll("input[type='checkbox']")
-    );
+    const scopeCheckboxes = Array.from(authContainer.querySelectorAll("input[type='checkbox']"));
     const hasAnyChecked = scopeCheckboxes.some((cb) => cb.checked);
     if (!hasAnyChecked && scopeCheckboxes.length > 0) {
-      scopeCheckboxes.forEach((cb) => {
-        cb.click();
-      });
+      scopeCheckboxes.forEach((cb) => cb.click());
     }
   };
 
@@ -102,14 +65,12 @@ window.onload = () => {
   };
 
   const collectAccessTokens = () => {
-    const authorized = system?.authSelectors?.authorized?.();
     const tokens = new Set();
-
+    const authorized = getSystem()?.authSelectors?.authorized?.();
     const token = extractAccessTokenFromAuthorized(authorized);
     if (token) {
       tokens.add(token);
     }
-
     return tokens;
   };
 
@@ -128,27 +89,25 @@ window.onload = () => {
     return false;
   };
 
-  const closeModalIfAuthorized = () => {
+  const closeModalIfAuthorized = (originalShowDefinitions) => {
     if (!hasFreshAccessToken()) {
       return false;
     }
 
-    if (typeof originalShowDefinitions === "function") {
-      isInternalClose = true;
-      originalShowDefinitions(false);
-      setTimeout(() => {
-        isInternalClose = false;
-      }, 0);
-      console.info("[docs][diag] modal closed after fresh token acquisition");
-    }
+    isInternalClose = true;
+    originalShowDefinitions(false);
+    setTimeout(() => {
+      isInternalClose = false;
+    }, 0);
+    console.info("[docs][diag] modal closed after fresh token acquisition");
     return true;
   };
 
-  const monitorAuthorizationResult = () => {
+  const monitorAuthorizationResult = (originalShowDefinitions) => {
     let attempts = 0;
     const timer = setInterval(() => {
       attempts += 1;
-      if (closeModalIfAuthorized()) {
+      if (closeModalIfAuthorized(originalShowDefinitions)) {
         clearInterval(timer);
         return;
       }
@@ -192,9 +151,58 @@ window.onload = () => {
     }, 50);
   };
 
-  if (typeof originalShowDefinitions === "function") {
-    console.info("[docs][diag] showDefinitions override installed");
-    system.authActions.showDefinitions = (definitions) => {
+  const ensureUi = () => {
+    if (window.ui?.getSystem) {
+      return;
+    }
+
+    window.ui = SwaggerUIBundle({
+      url: "/q/openapi",
+      dom_id: "#swagger-ui",
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+      layout: "StandaloneLayout",
+      oauth2RedirectUrl: `${window.location.origin}/docs/oauth2-redirect.html`,
+      persistAuthorization: true,
+      requestInterceptor: (request) => {
+        const authorized = getSystem()?.authSelectors?.authorized?.();
+        const accessToken = extractAccessTokenFromAuthorized(authorized);
+
+        if (accessToken) {
+          request.headers = request.headers || {};
+          request.headers.Authorization = `Bearer ${accessToken}`;
+        }
+
+        console.info("[docs][diag] request", {
+          method: request.method,
+          url: request.url,
+          hasAccessToken: !!accessToken,
+          hasAuthorizationHeader: !!(request.headers && request.headers.Authorization)
+        });
+
+        return request;
+      }
+    });
+
+    window.ui.initOAuth({
+      clientId: oauthClientId,
+      usePkceWithAuthorizationCodeGrant: true,
+      scopes: oauthScopes.join(" ")
+    });
+  };
+
+  const installOverride = () => {
+    const system = getSystem();
+    const showDefinitions = system?.authActions?.showDefinitions;
+    if (typeof showDefinitions !== "function") {
+      return false;
+    }
+
+    if (showDefinitions.__docsPatched) {
+      return true;
+    }
+
+    const originalShowDefinitions = showDefinitions;
+    const patchedShowDefinitions = (definitions) => {
       if (isInternalClose || definitions === false) {
         return originalShowDefinitions(definitions);
       }
@@ -204,10 +212,44 @@ window.onload = () => {
 
       const result = originalShowDefinitions(definitions);
       setTimeout(autoConfirmAuthorizeModal, 0);
-      setTimeout(monitorAuthorizationResult, 0);
+      setTimeout(() => monitorAuthorizationResult(originalShowDefinitions), 0);
       return result;
     };
+
+    patchedShowDefinitions.__docsPatched = true;
+    patchedShowDefinitions.__docsOriginal = originalShowDefinitions;
+    system.authActions.showDefinitions = patchedShowDefinitions;
+    console.info("[docs][diag] showDefinitions override installed");
+    return true;
+  };
+
+  const installOverrideWithRetry = () => {
+    let attempts = 0;
+    const maxAttempts = 100;
+
+    const tryInstall = () => {
+      attempts += 1;
+      if (installOverride() || attempts >= maxAttempts) {
+        return;
+      }
+      setTimeout(tryInstall, 100);
+    };
+
+    tryInstall();
+  };
+
+  const boot = () => {
+    ensureUi();
+    installOverrideWithRetry();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
   } else {
-    console.warn("[docs][diag] unable to override showDefinitions");
+    boot();
   }
-};
+
+  window.addEventListener("pageshow", () => {
+    installOverrideWithRetry();
+  });
+})();
