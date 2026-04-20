@@ -11,9 +11,11 @@ import io.quarkus.vertx.web.Param;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RouteBase;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 
 @RouteBase(path = "api")
+@RolesAllowed({"user", "admin"})
 public class BookRoute {
     @Inject
     private BookRepository bookRepository;

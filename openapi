@@ -1,0 +1,110 @@
+---
+openapi: 3.0.3
+info:
+  title: Books API
+  description: API secured with Keycloak
+  version: 1.0.0
+security:
+- keycloak: []
+paths:
+  /api/Books:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+      responses:
+        "204":
+          description: No Content
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+  /api/Books/{criteria}/{search}:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+  /api/Books/{id}:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+    delete:
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ObjectId"
+        Name:
+          type: string
+        Price:
+          format: double
+          type: number
+        Category:
+          type: string
+        Author:
+          type: string
+    Date:
+      format: date
+      type: string
+      example: 2022-03-10
+    ObjectId:
+      type: object
+      properties:
+        timestamp:
+          format: int32
+          type: integer
+        counter:
+          format: int32
+          type: integer
+        randomValue1:
+          format: int32
+          type: integer
+        randomValue2:
+          type: integer
+        date:
+          $ref: "#/components/schemas/Date"
+  securitySchemes:
+    keycloak:
+      type: openIdConnect
+      openIdConnectUrl: "${quarkus.oidc.auth-server-url}/.well-known/openid-configuration"
+    SecurityScheme:
+      type: openIdConnect
+      description: Authentication
+      openIdConnectUrl: http://localhost:8080/realms/QuarkusRealm/.well-known/openid-configuration

@@ -2,3 +2,38 @@ quarkus:
   mongodb:
     connection-string: mongodb://localhost:27017
     database: BookstoreDb
+
+  oidc:
+    application-type: service
+    auth-server-url: http://localhost:8080/realms/QuarkusRealm
+    client-id: quarkus-app
+    roles:
+      role-claim-path: realm_access/roles
+    tls:
+      verification: none
+    token:
+      issuer: http://localhost:8080/realms/QuarkusRealm
+
+  smallrye-openapi:
+    servers: http://localhost:${quarkus.http.port}
+    security-scheme: oidc
+    security-scheme-name: keycloak
+    security-scheme-description: Authentication
+    oidc-open-id-connect-url: ${quarkus.oidc.auth-server-url}/.well-known/openid-configuration
+    auto-add-security: false
+    auto-add-security-requirement: false
+
+  swagger-ui:
+    always-include: false
+    enabled: false
+
+  http:
+    auth:
+      permission:
+        authenticated:
+          paths: /*
+          policy: authenticated
+        public:
+          paths: /q/openapi,/docs/*,/docs/oauth2-redirect.html
+          policy: permit
+    port: 8081

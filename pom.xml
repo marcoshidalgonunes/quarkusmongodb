@@ -56,6 +56,15 @@
       <artifactId>quarkus-resteasy-reactive-jsonb</artifactId>
     </dependency>
     <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-security</artifactId>
+    </dependency>    
+    <!-- OIDC with Keycloak-->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-oidc</artifactId>
+    </dependency>    
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-config-yaml</artifactId>
     </dependency>
