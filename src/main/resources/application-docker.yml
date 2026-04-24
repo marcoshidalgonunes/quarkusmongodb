@@ -1,34 +1,19 @@
 quarkus:
-  http:
-    auth:
-      permission:
-        authenticated:
-          paths: /*
-          policy: authenticated
-        public:
-          paths: /q/openapi,/q/swagger-ui/*
-          policy: permit
-    port: 8081  
-
   mongodb:
     connection-string: mongodb://mongo:27017
-    database: BookstoreDb
 
   oidc:
-    application-type: service
-    auth-server-url: http://host.docker.internal:8080/realms/QuarkusRealm
-    client-id: quarkus-app
+    auth-server-url: http://keycloak:8080/realms/QuarkusRealm
     roles:
       role-claim-path: resource_access/${quarkus.oidc.client-id}/roles
-    tls:
-      verification: none
-    token:
-      issuer: ${quarkus.oidc.auth-server-url}
 
   smallrye-openapi:
     security-scheme: oauth2-implicit
     security-scheme-name: keycloak
-    oauth2-implicit-authorization-url: ${quarkus.oidc.auth-server-url}/protocol/openid-connect/auth
 
-  swagger-ui:
-    oauth2-redirect-url: http://localhost:${quarkus.http.port}/q/swagger-ui/oauth2-redirect.html    
+    # IMPORTANT: for this Quarkus version, use oauth2-authorization-url (not oauth2-implicit-authorization-url)
+    oauth2-authorization-url: http://localhost:8080/realms/QuarkusRealm/protocol/openid-connect/auth
+
+  swagger:
+    oauth:
+      authorization-url: http://localhost:8080/realms/QuarkusRealm/protocol/openid-connect/auth
