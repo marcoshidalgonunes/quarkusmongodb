@@ -13,6 +13,14 @@ public class SwaggerSecuritySchemeFilter implements OASFilter {
 
     @Override
     public void filterOpenAPI(OpenAPI openAPI) {
+        String profile = ConfigProvider.getConfig()
+            .getOptionalValue("quarkus.profile", String.class)
+            .orElse("");
+
+        if (!"docker".equals(profile)) {
+            return;
+        }
+        
         String authUrl = ConfigProvider.getConfig()
                 .getOptionalValue("swagger.oauth.authorization-url", String.class)
                 .orElse("");
@@ -39,5 +47,7 @@ public class SwaggerSecuritySchemeFilter implements OASFilter {
         scheme.setFlows(flows);
 
         components.addSecurityScheme("keycloak", scheme);
+
+        System.out.println("SwaggerSecuritySchemeFilter running, authUrl=" + authUrl);
     }
 }

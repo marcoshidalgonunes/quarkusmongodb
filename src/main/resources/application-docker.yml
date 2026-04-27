@@ -11,9 +11,6 @@ quarkus:
     security-scheme: oauth2-implicit
     security-scheme-name: keycloak
 
-    # IMPORTANT: for this Quarkus version, use oauth2-authorization-url (not oauth2-implicit-authorization-url)
-    oauth2-authorization-url: http://localhost:8080/realms/QuarkusRealm/protocol/openid-connect/auth
-
-  swagger:
-    oauth:
-      authorization-url: http://localhost:8080/realms/QuarkusRealm/protocol/openid-connect/auth
+swagger:
+  oauth:
+    authorization-url: http://localhost:8080/realms/QuarkusRealm/protocol/openid-connect/auth

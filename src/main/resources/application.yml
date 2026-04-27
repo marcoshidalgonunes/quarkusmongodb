@@ -22,8 +22,11 @@ quarkus:
   smallrye-openapi:
     security-scheme: oauth2-implicit
     security-scheme-name: keycloak
-    filter: org.quarkusmongodb.configs.SwaggerSecuritySchemeFilter
 
   swagger-ui:
     always-include: true
     oauth2-redirect-url: http://localhost:${quarkus.http.port}/q/swagger-ui/oauth2-redirect.html
+
+mp:
+  openapi:
+    filter: org.quarkusmongodb.configs.SwaggerSecuritySchemeFilter
