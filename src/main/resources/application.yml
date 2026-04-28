@@ -1,13 +1,13 @@
 quarkus:
+
   http:
     auth:
       permission:
-        authenticated:
-          paths: /*
-          policy: authenticated
         public:
-          paths: /q/openapi,/q/openapi/*,/q/swagger-ui,/q/swagger-ui/*
+          paths: /q/*
           policy: permit
+        default:
+          policy: authenticated
     port: 8081
 
   mongodb:
