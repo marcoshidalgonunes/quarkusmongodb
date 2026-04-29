@@ -58,4 +58,19 @@ Application uses MongoDB as NoSQL through Panache ([guide](https://quarkus.io/gu
 
 ## Open API
 
-Application uses [OpenAPI with Swagger](https://quarkus.io/guides/openapi-swaggerui) to describe its endpoints in [Dev Mode](https://quarkus.io/guides/dev-mode-differences).
+Application uses [OpenAPI with Swagger](https://quarkus.io/guides/openapi-swaggerui) to describe its endpoints in [Dev Mode](https://quarkus.io/guides/dev-mode-differences). It is available in Docker via configuration:
+```yaml
+quarkus:
+  swagger-ui:
+    always-include: true
+```
+
+## Health check
+
+Health check endpoints are available via **SmallRye Health**:
+
+- **Liveness**: GET /q/health/live
+- **Readiness**: GET /q/health/ready
+- **Overall**: GET /q/health
+
+
