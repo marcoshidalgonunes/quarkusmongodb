@@ -4,7 +4,7 @@ quarkus:
     connection-string: mongodb://mongo:27017
 
   oidc:
-    auth-server-url: http://keycloak-proxy:8080/realms/QuarkusRealm
+    auth-server-url: http://keycloak:8080/realms/QuarkusRealm
     roles:
       role-claim-path: resource_access/${quarkus.oidc.client-id}/roles
     token:
