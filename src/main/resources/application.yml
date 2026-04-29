@@ -16,6 +16,8 @@ quarkus:
   oidc:
     application-type: service
     client-id: quarkus-app
+    roles:
+      role-claim-path: resource_access/${quarkus.oidc.client-id}/roles    
     tls:
       verification: none
 

@@ -8,8 +8,6 @@ quarkus:
 
   oidc:
     auth-server-url: http://localhost:8080/realms/QuarkusRealm
-    roles:
-      role-claim-path: resource_access/${quarkus.oidc.client-id}/roles
 
   smallrye-openapi:
     oauth2-implicit-authorization-url: ${quarkus.oidc.auth-server-url}/protocol/openid-connect/auth
